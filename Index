@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>How Far Apart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;
+    --accent:#7c6af7;--accent2:#a78bfa;--green:#34d399;--red:#f87171;
+    --orange:#fb923c;--text:#e2e8f0;--muted:#64748b;--dim:#334155;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+  .wrap{width:100%;max-width:420px;}
+  .header{text-align:center;margin-bottom:28px;}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--accent2);text-transform:uppercase;margin-bottom:6px;}
+  h1{font-size:28px;font-weight:700;letter-spacing:-0.5px;}
+  h1 span{color:var(--accent2);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;}
+  .lbl{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+  .row{display:flex;gap:10px;align-items:center;}
+  .room-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--text);letter-spacing:3px;text-transform:uppercase;outline:none;transition:border-color .2s;}
+  .room-input:focus{border-color:var(--accent);}
+  .room-input::placeholder{color:var(--dim);}
+  .btn{background:var(--accent);border:none;border-radius:12px;padding:12px 16px;color:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .btn:hover{background:var(--accent2);transform:translateY(-1px);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+  .btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent2);background:var(--surface2);}
+  .btn-guest{background:#1e293b;border:1px solid var(--border);color:var(--accent2);}
+  .status-row{display:flex;gap:12px;margin-top:16px;}
+  .status-item{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;align-items:center;gap:8px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .3s;}
+  .dot.on{background:var(--green);box-shadow:0 0 6px var(--green);}
+  .dot.wait{background:var(--orange);}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+  .dot.loading{background:var(--accent2);animation:pulse 1.5s infinite;}
+  .sname{font-weight:600;color:var(--text);font-size:12px;}
+  .ssub{color:var(--muted);font-size:11px;margin-top:1px;}
+  .hint{background:rgba(124,106,247,.08);border:1px solid rgba(124,106,247,.2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--accent2);display:flex;align-items:center;gap:8px;margin-top:12px;}
+  .dist-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px 24px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden;}
+  .dist-card::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:200px;height:120px;background:radial-gradient(ellipse,rgba(124,106,247,.15) 0%,transparent 70%);pointer-events:none;}
+  .dist-lbl{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+  .dist-num{font-family:'Space Mono',monospace;font-size:56px;font-weight:700;color:var(--accent2);line-height:1;letter-spacing:-2px;transition:all .5s;}
+  .dist-unit{font-size:16px;font-weight:500;color:var(--muted);margin-top:4px;}
+  .dist-ctx{margin-top:16px;font-size:13px;color:var(--muted);font-style:italic;}
+  .arc{display:flex;align-items:center;margin:20px 0;}
+  .arc-you,.arc-friend{font-size:11px;font-weight:600;color:var(--accent2);min-width:40px;text-align:center;}
+  .arc-line{flex:1;height:2px;background:linear-gradient(to right,var(--accent),var(--accent2));border-radius:2px;margin:0 8px;position:relative;}
+  @keyframes fly{0%{left:15%}100%{left:75%}}
+  .arc-plane{position:absolute;top:-10px;font-size:14px;animation:fly 3s ease-in-out infinite alternate;}
+  .chips{display:flex;gap:10px;margin-top:16px;}
+  .chip{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
+  .chip .v{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;}
+  .chip .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+  .wait-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;text-align:center;color:var(--muted);font-size:14px;}
+  .wait-big{font-size:32px;margin-bottom:10px;}
+  .logbox{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-family:'Space Mono',monospace;font-size:11px;max-height:80px;overflow-y:auto;line-height:1.8;}
+  .le{color:var(--muted)}.le.ok{color:var(--green)}.le.w{color:var(--orange)}.le.e{color:var(--red)}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="eyebrow">Real-time tracker</div>
+    <h1>How Far <span>Apart?</span></h1>
+  </div>
+
+  <div class="card">
+    <div class="lbl">Room Code</div>
+    <div class="sub">You = tap HOST &nbsp;|&nbsp; Your friend = tap GUEST 🔗</div>
+    <div class="row">
+      <input class="room-input" id="roomInput" maxlength="6" placeholder="ABCD12" />
+      <button class="btn" id="hostBtn" onclick="join('host')">Host</button>
+      <button class="btn btn-guest" id="guestBtn" onclick="join('guest')">Guest</button>
+      <button class="btn btn-ghost" onclick="genCode()" title="Random">🎲</button>
+    </div>
+    <div class="status-row">
+      <div class="status-item"><div class="dot" id="youDot"></div><div><div class="sname">You</div><div class="ssub" id="youSub">Not connected</div></div></div>
+      <div class="status-item"><div class="dot" id="frDot"></div><div><div class="sname">Friend</div><div class="ssub" id="frSub">Waiting...</div></div></div>
+    </div>
+    <div class="hint hidden" id="hint">📤 Share link + code <strong id="codeShow"></strong> with your friend!</div>
+  </div>
+
+  <div class="wait-card hidden" id="waitCard">
+    <div class="wait-big">⏳</div>
+    Waiting for friend to join room <strong id="waitCode" style="color:var(--accent2)"></strong>...
+    <div style="font-size:11px;color:var(--dim);margin-top:10px">They must open the same page and enter the same code, then tap Guest</div>
+  </div>
+
+  <div class="dist-card hidden" id="distCard">
+    <div class="dist-lbl">Distance between you</div>
+    <div class="dist-num" id="distNum">—</div>
+    <div class="dist-unit" id="distUnit">km</div>
+    <div class="arc">
+      <div class="arc-you">YOU</div>
+      <div class="arc-line"><div class="arc-plane">✈️</div></div>
+      <div class="arc-friend">FRIEND</div>
+    </div>
+    <div class="dist-ctx" id="distCtx">Calculating...</div>
+    <div class="chips">
+      <div class="chip"><div class="v" id="bVal">—°</div><div class="k">Bearing</div></div>
+      <div class="chip"><div class="v" id="uVal">—</div><div class="k">Updated</div></div>
+      <div class="chip"><div class="v" id="aVal">—m</div><div class="k">Accuracy</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="lbl" style="margin-bottom:8px">Activity Log</div>
+    <div class="logbox" id="logBox"><div class="le">Ready. Enter a code and tap Host or Guest.</div></div>
+  </div>
+</div>
+
+<script>
+// ─── Backend: jsonstore.io (free, no signup, no CORS issues) ───────────────
+// Each user writes their GPS to a unique slot, polls friend's slot
+const BASE = "https://www.jsonstore.io";
+
+let myRoom=null, myRole=null, myPos=null, friendPos=null;
+let watchId=null, pushInt=null, pollInt=null, lastUpdate=null;
+
+function log(msg,t=""){
+  const b=document.getElementById("logBox");
+  const d=document.createElement("div");
+  d.className="le "+(t==="ok"?"ok":t==="w"?"w":t==="e"?"e":"");
+  const ts=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  d.textContent=`[${ts}] ${msg}`;
+  b.appendChild(d);
+  b.scrollTop=b.scrollHeight;
+}
+
+function genCode(){
+  const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  document.getElementById("roomInput").value=Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join("");
+}
+
+function haversine(a,b,c,d){
+  const R=6371,dL=(c-a)*Math.PI/180,dN=(d-b)*Math.PI/180;
+  const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dN/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+function getBearing(a,b,c,d){
+  const dN=(d-b)*Math.PI/180;
+  const y=Math.sin(dN)*Math.cos(c*Math.PI/180);
+  const x=Math.cos(a*Math.PI/180)*Math.sin(c*Math.PI/180)-Math.sin(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.cos(dN);
+  return(((Math.atan2(y,x)*180/Math.PI)+360)%360).toFixed(0);
+}
+function ctx(km){
+  if(km<0.05)return"You're basically next to each other 👀";
+  if(km<0.5)return"A short walk away 🚶";
+  if(km<2)return"A few minutes drive 🚗";
+  if(km<10)return"In the same city area 🏙️";
+  if(km<50)return"A city or two apart 🛣️";
+  if(km<200)return"A few hours drive 🚌";
+  if(km<1000)return"Another region away ✈️";
+  if(km<5000)return"A long flight away 🌍";
+  return"Across the world 🌐";
+}
+
+// jsonstore.io helpers
+async function storeSet(key, data){
+  try{
+    await fetch(`${BASE}/${key}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  }catch(e){log("Push error: "+e.message,"e");}
+}
+async function storeGet(key){
+  try{
+    const r=await fetch(`${BASE}/${key}`);
+    const j=await r.json();
+    return j.result||null;
+  }catch(e){return null;}
+}
+
+function myKey(){return `hfa-${myRoom}-${myRole}`;}
+function frKey(){return `hfa-${myRoom}-${myRole==="host"?"guest":"host"}`;}
+
+async function pushLoc(){
+  if(!myPos||!myRoom)return;
+  await storeSet(myKey(),{lat:myPos.lat,lon:myPos.lon,ts:Date.now()});
+}
+
+async function pollFriend(){
+  const data=await storeGet(frKey());
+  if(data&&data.lat&&data.ts&&(Date.now()-data.ts)<60000){
+    friendPos={lat:data.lat,lon:data.lon};
+    lastUpdate=new Date();
+    document.getElementById("frDot").className="dot on";
+    document.getElementById("frSub").textContent="Live 📍";
+    document.getElementById("waitCard").classList.add("hidden");
+    document.getElementById("distCard").classList.remove("hidden");
+    updateDist();
+  }else{
+    document.getElementById("frDot").className="dot wait";
+    document.getElementById("frSub").textContent="Waiting...";
+  }
+  if(lastUpdate){
+    const s=Math.round((Date.now()-lastUpdate)/1000);
+    document.getElementById("uVal").textContent=s<60?s+"s ago":Math.round(s/60)+"m ago";
+  }
+}
+
+function updateDist(){
+  if(!myPos||!friendPos)return;
+  const km=haversine(myPos.lat,myPos.lon,friendPos.lat,friendPos.lon);
+  const b=getBearing(myPos.lat,myPos.lon,friendPos.lat,friendPos.lon);
+  let n,u;
+  if(km<1){n=Math.round(km*1000);u="meters";}
+  else{n=km<10?km.toFixed(2):Math.round(km);u="km";}
+  document.getElementById("distNum").textContent=n;
+  document.getElementById("distUnit").textContent=u;
+  document.getElementById("bVal").textContent=b+"°";
+  document.getElementById("distCtx").textContent=ctx(km);
+}
+
+function startGPS(){
+  if(!navigator.geolocation){log("GPS not available","e");return;}
+  log("Requesting GPS...");
+  document.getElementById("youDot").className="dot loading";
+  watchId=navigator.geolocation.watchPosition(
+    pos=>{
+      myPos={lat:pos.coords.latitude,lon:pos.coords.longitude};
+      const acc=Math.round(pos.coords.accuracy||0);
+      document.getElementById("aVal").textContent=acc+"m";
+      document.getElementById("youDot").className="dot on";
+      document.getElementById("youSub").textContent=`Live · ±${acc}m`;
+      pushLoc();
+    },
+    err=>{log("GPS: "+err.message,"e");document.getElementById("youDot").className="dot wait";},
+    {enableHighAccuracy:true,timeout:15000,maximumAge:5000}
+  );
+  pushInt=setInterval(pushLoc,8000);
+  pollInt=setInterval(pollFriend,5000);
+}
+
+function join(role){
+  const code=document.getElementById("roomInput").value.trim().toUpperCase();
+  if(code.length<4){log("Code must be at least 4 characters","w");return;}
+  myRoom=code; myRole=role;
+  document.getElementById("hostBtn").disabled=true;
+  document.getElementById("guestBtn").disabled=true;
+  document.getElementById("hint").classList.remove("hidden");
+  document.getElementById("codeShow").textContent=code;
+  document.getElementById("waitCode").textContent=code;
+  document.getElementById("waitCard").classList.remove("hidden");
+  document.getElementById("youSub").textContent=`Room ${code} · ${role==="host"?"Host 🏠":"Guest 👋"}`;
+  log(`Joined room ${code} as ${role==="host"?"Host":"Guest"}`, "ok");
+  startGPS();
+}
+
+genCode();
+</script>
+</body>
+</html>
